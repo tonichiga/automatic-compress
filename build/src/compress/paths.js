@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.inputDirVideo = exports.outputDirVideo = exports.inputDirImage = exports.outputDirImage = void 0;
+var outputDirImage = "./src/output-image";
+exports.outputDirImage = outputDirImage;
+var inputDirImage = "./src/input-image";
+exports.inputDirImage = inputDirImage;
+var outputDirVideo = "./output-video";
+exports.outputDirVideo = outputDirVideo;
+var inputDirVideo = "./input-video";
+exports.inputDirVideo = inputDirVideo;
