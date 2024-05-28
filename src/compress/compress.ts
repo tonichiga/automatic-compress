@@ -1,23 +1,27 @@
 const fs = require("fs");
 import * as path from "path";
 import { exec } from "child_process";
-import { imageCommands } from "../commands";
+const { spawn } = require("child_process");
+const readline = require("readline");
 
 class CompressImage {
   input: string;
   output: string;
+  commands: Function;
 
-  constructor(input: string, output: string) {
+  constructor(input: string, output: string, commands: Function) {
     this.input = input;
     this.output = output;
+    this.commands = commands;
 
     this.calculateTotalSize = this.calculateTotalSize.bind(this);
-    this.compressImage = this.compressImage.bind(this);
+    this.compressFile = this.compressFile.bind(this);
     this.fileHandler = this.fileHandler.bind(this);
     this.getFiles = this.getFiles.bind(this);
     this.clearDir = this.clearDir.bind(this);
-    this.compressAllJpgImages = this.compressAllJpgImages.bind(this);
+    this.compressAllFiles = this.compressAllFiles.bind(this);
     this.defineInputFileExtension = this.defineInputFileExtension.bind(this);
+    this.ffmpegExec = this.ffmpegExec.bind(this);
   }
 
   getFiles(callback) {
@@ -25,12 +29,15 @@ class CompressImage {
       if (err) {
         return callback(err);
       }
-      const jpgFiles = files.filter((file) =>
-        this.defineSuppertedFileExtensions().includes(
+      const _files = files.filter((file) =>
+        this.defineSupportedFileExtensions().includes(
           path.extname(file).toLowerCase()
         )
       );
-      callback(null, jpgFiles);
+
+      console.log("support:", this.defineSupportedFileExtensions());
+      console.log(`Найдено файлов: ${_files.length}`);
+      callback(null, _files);
     });
   }
 
@@ -39,7 +46,7 @@ class CompressImage {
       return new Promise((resolve) => {
         fs.stat(file, (err, stats) => {
           if (err) {
-            return callback(null, err);
+            return callback({}, err);
           }
 
           resolve(stats.size as number);
@@ -60,22 +67,56 @@ class CompressImage {
     }
   }
 
-  compressImage(inputPath, outputPath, callback) {
+  ffmpegExec(inputPath, outputPath, callback) {
+    const fileExtension = this.defineInputFileExtension(inputPath);
+    const command = this.commands(inputPath, outputPath)[fileExtension];
+
+    const ffmpeg = spawn("ffmpeg", command);
+
+    // Интерфейс для построчного чтения stderr
+    const rl = readline.createInterface({
+      input: ffmpeg.stderr,
+      output: process.stdout,
+      terminal: false,
+    });
+
+    // Регулярное выражение для поиска времени из вывода ffmpeg
+    const timePattern = /time=(\d{2}):(\d{2}):(\d{2})\.(\d{2})/;
+
+    rl.on("line", (line) => {
+      // Найти время в строке
+      const match = timePattern.exec(line);
+      if (match) {
+        const hours = parseInt(match[1], 10);
+        const minutes = parseInt(match[2], 10);
+        const seconds = parseInt(match[3], 10);
+        const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+        console.log(`Progress: ${totalSeconds} seconds`);
+        callback(null);
+      }
+    });
+
+    ffmpeg.on("close", (code) => {
+      console.log(`ffmpeg process exited with code ${code}`);
+    });
+  }
+
+  compressFile(inputPath, outputPath, callback) {
     // const command = `ffmpeg -i "${inputPath}" -compression_level 100 "${outputPath}"`;
     // const downScale = `ffmpeg -i "${inputPath}" -vf "scale=iw/4:ih/4,format=rgba"  "${outputPath}"`;
 
     const fileExtension = this.defineInputFileExtension(inputPath);
-    const command = imageCommands(inputPath, outputPath)[fileExtension];
+    const command = this.commands(inputPath, outputPath)[fileExtension];
 
-    exec(command, (error, stdout, stderr) => {
+    exec(command, (error, stdout, stderr, ...props) => {
       if (error) {
-        console.error(`Ошибка при сжатии изображения: ${error.message}`);
+        console.error(`Ошибка при сжатии файла: ${error.message}`);
         return callback(error);
       }
       if (stderr) {
         console.error(`FFmpeg stderr: ${stderr}`);
       }
-      // console.log(`Сжатие завершено: ${outputPath}`);
+
       callback(null);
     });
   }
@@ -89,7 +130,7 @@ class CompressImage {
       return console.error(`Ошибка при чтении директории: ${err.message}`);
     }
     if (files.length === 0) {
-      return console.log("Нет PNG-файлов для сжатия.");
+      return console.log("Нет файлов для сжатия.");
     }
 
     files.forEach(async (file) => {
@@ -97,7 +138,7 @@ class CompressImage {
       const outputPath = path.join(this.output, `${file}`);
 
       await new Promise((resolve) =>
-        this.compressImage(inputPath, outputPath, (err) => {
+        this.ffmpegExec(inputPath, outputPath, (err) => {
           this.calculateTotalSize(
             { inputFile: inputPath, outputFile: outputPath },
             ({ inputSize, outputSize }) => {
@@ -145,7 +186,7 @@ class CompressImage {
     });
   }
 
-  compressAllJpgImages() {
+  compressAllFiles() {
     this.clearDir();
 
     this.getFiles(this.fileHandler);
@@ -155,13 +196,12 @@ class CompressImage {
     return path.extname(file).toLowerCase();
   }
 
-  defineSuppertedFileExtensions() {
-    const commands = imageCommands(this.input, this.output);
-    return Object.keys(commands);
+  defineSupportedFileExtensions() {
+    return Object.keys(this.commands(this.input, this.output));
   }
 
   start() {
-    this.compressAllJpgImages();
+    this.compressAllFiles();
   }
 }
 

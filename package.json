@@ -2,6 +2,7 @@
   "type": "commonjs",
   "scripts": {
     "compress-image": "npm run compile && node build/src/index-image.js",
+    "compress-video": "npm run compile && node build/src/index-video.js",
     "lint": "gts lint",
     "clean": "gts clean",
     "compile": "tsc",

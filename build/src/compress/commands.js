@@ -2,9 +2,48 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.imageCommands = exports.videoCommands = void 0;
 var videoCommands = function (input, output) { return ({
-    ".webm": "fmpeg -i ".concat(input, " -c:v libvpx -crf 4 -b:v 1500K -c:a libvorbis ").concat(output),
-    ".mp4": "ffmpeg -i ".concat(input, " -c:v libx264 -crf 28 -b:v 1500K -c:a aac ").concat(output),
-    ".mov": "ffmpeg -i ".concat(input, " -c:v libx264 -crf 28 -b:v 1500K -c:a aac ").concat(output),
+    ".webm": [
+        "ffmpeg",
+        "-i",
+        input,
+        "-c:v",
+        "libvpx",
+        "-crf",
+        "10",
+        "-b:v",
+        "500K",
+        "-c:a",
+        "libvorbis",
+        output,
+    ],
+    ".mp4": [
+        "ffmpeg",
+        "-i",
+        input,
+        "-c:v",
+        "libvpx",
+        "-crf",
+        "10",
+        "-b:v",
+        "500K",
+        "-c:a",
+        "libvorbis",
+        output,
+    ],
+    ".mov": [
+        "ffmpeg",
+        "-i",
+        input,
+        "-c:v",
+        "libvpx",
+        "-crf",
+        "10",
+        "-b:v",
+        "500K",
+        "-c:a",
+        "libvorbis",
+        output,
+    ],
 }); };
 exports.videoCommands = videoCommands;
 var imageCommands = function (input, output) { return ({
