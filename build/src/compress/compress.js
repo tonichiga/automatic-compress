@@ -140,6 +140,7 @@ var CompressImage = /** @class */ (function () {
         // const downScale = `ffmpeg -i "${inputPath}" -vf "scale=iw/4:ih/4,format=rgba"  "${outputPath}"`;
         var fileExtension = this.defineInputFileExtension(inputPath);
         var command = this.commands(inputPath, outputPath)[fileExtension];
+        console.log("\u0421\u0436\u0430\u0442\u0438\u0435 \u0444\u0430\u0439\u043B\u0430: ".concat(inputPath));
         (0, child_process_1.exec)(command, function (error, stdout, stderr) {
             var props = [];
             for (var _i = 3; _i < arguments.length; _i++) {
@@ -149,9 +150,9 @@ var CompressImage = /** @class */ (function () {
                 console.error("\u041E\u0448\u0438\u0431\u043A\u0430 \u043F\u0440\u0438 \u0441\u0436\u0430\u0442\u0438\u0438 \u0444\u0430\u0439\u043B\u0430: ".concat(error.message));
                 return callback(error);
             }
-            if (stderr) {
-                console.error("FFmpeg stderr: ".concat(stderr));
-            }
+            // if (stderr) {
+            //   console.error(`FFmpeg stderr: ${stderr}`);
+            // }
             callback(null);
         });
     };
@@ -175,7 +176,7 @@ var CompressImage = /** @class */ (function () {
                         inputPath = path.join(this.input, file);
                         outputPath = path.join(this.output, "".concat(file));
                         return [4 /*yield*/, new Promise(function (resolve) {
-                                return _this.ffmpegExec(inputPath, outputPath, function (err) {
+                                return _this.compressFile(inputPath, outputPath, function (err) {
                                     _this.calculateTotalSize({ inputFile: inputPath, outputFile: outputPath }, function (_a) {
                                         var inputSize = _a.inputSize, outputSize = _a.outputSize;
                                         totalSizeBeforeCompress += inputSize;

@@ -108,14 +108,16 @@ class CompressImage {
     const fileExtension = this.defineInputFileExtension(inputPath);
     const command = this.commands(inputPath, outputPath)[fileExtension];
 
+    console.log(`Сжатие файла: ${inputPath}`);
+
     exec(command, (error, stdout, stderr, ...props) => {
       if (error) {
         console.error(`Ошибка при сжатии файла: ${error.message}`);
         return callback(error);
       }
-      if (stderr) {
-        console.error(`FFmpeg stderr: ${stderr}`);
-      }
+      // if (stderr) {
+      //   console.error(`FFmpeg stderr: ${stderr}`);
+      // }
 
       callback(null);
     });
@@ -138,7 +140,7 @@ class CompressImage {
       const outputPath = path.join(this.output, `${file}`);
 
       await new Promise((resolve) =>
-        this.ffmpegExec(inputPath, outputPath, (err) => {
+        this.compressFile(inputPath, outputPath, (err) => {
           this.calculateTotalSize(
             { inputFile: inputPath, outputFile: outputPath },
             ({ inputSize, outputSize }) => {
