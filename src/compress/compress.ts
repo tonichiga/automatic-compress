@@ -1,8 +1,8 @@
-const fs = require("fs");
+import * as fs from "fs";
 import * as path from "path";
 import { exec } from "child_process";
-const { spawn } = require("child_process");
-const readline = require("readline");
+import { spawn } from "child_process";
+import * as readline from "readline";
 
 class CompressImage {
   input: string;
