@@ -1,6 +1,6 @@
-const readline = require("readline");
-const fs = require("fs");
-const { spawn } = require("child_process");
+import * as readline from "readline";
+import * as fs from "fs";
+import { spawn } from "child_process";
 
 const rl = readline.createInterface({
   input: process.stdin,
