@@ -52,9 +52,10 @@ exports.videoCommands = videoCommands;
 //   ],
 // });
 var imageCommands = function (input, output) { return ({
-    ".jpg": "ffmpeg -i ".concat(input, " -compression_level 100 ").concat(output),
+    // ".jpg": `ffmpeg -i ${input} -compression_level 100 ${output}`,//compress
+    ".jpg": "ffmpeg -i ".concat(input, " -c:v libwebp -lossless 0 -q:v 75 \"./src/output-image\""),
     ".jpeg": "ffmpeg -i ".concat(input, " -compression_level 100 ").concat(output),
     ".png": "ffmpeg -i ".concat(input, " -vf \"scale=iw/4:ih/4,format=rgba\"  ").concat(output),
-    ".webp": "ffmpeg -i ".concat(input, " -vf \"scale=iw/4:ih/4,format=rgba\"  ").concat(output),
+    ".webp": "ffmpeg -i ".concat(input, " -vf \"scale=iw/2:ih/2,format=rgba\" -q:v 75 ").concat(output),
 }); };
 exports.imageCommands = imageCommands;
