@@ -1,4 +1,4 @@
-import { variables } from "@/shared/supported-extension";
+import { variables } from "../../shared/supported-extension";
 import { FileHandlerProps, PathProps } from "../../types";
 import * as path from "path";
 import * as fs from "fs";
@@ -90,8 +90,8 @@ class FileHandler {
 
 export { FileHandler };
 
-const handler = new FileHandler({});
+// const handler = new FileHandler({});
 
-handler.getFilesNames((files) => {
-  console.log("files >>", files);
-});
+// handler.getFilesNames((files) => {
+//   console.log("files >>", files);
+// });

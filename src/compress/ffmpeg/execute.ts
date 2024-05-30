@@ -69,4 +69,4 @@ class FfmpegExecute extends FileHandler {
 
 export { FfmpegExecute };
 
-const i = new FfmpegExecute({ type: "image" });
+// const i = new FfmpegExecute({ type: "image" });
