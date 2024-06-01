@@ -10,3 +10,7 @@ const ffmeg = new FfmpegExecute({
 ffmeg.compressImage({
   quality: 30,
 });
+
+ffmeg.convertImage({
+  toExtension: "webp",
+});

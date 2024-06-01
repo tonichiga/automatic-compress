@@ -2,25 +2,20 @@ import { percentageToRange } from "../../shared/tools";
 import {
   CompessMethod,
   CompressImageProps,
+  ConverMethod,
   PathProps,
   PathnameProps,
   ProportionsProps,
   ScaleProps,
 } from "../../types";
 
-class Compress {
-  paths: PathnameProps[];
-
-  constructor(params: CompressImageProps) {
+class CompressImage {
+  constructor() {
     this.compressJpeg = this.compressJpeg.bind(this);
     this.compressJpg = this.compressJpg.bind(this);
     this.compressPng = this.compressPng.bind(this);
     this.compressWebp = this.compressWebp.bind(this);
     this.compressTiff = this.compressTiff.bind(this);
-
-    if ("paths" in params) {
-      this.paths = params.paths;
-    }
   }
 
   compressMethodByExtension() {
@@ -112,22 +107,24 @@ class Resolutions {
   }
 }
 
-class Convert {
-  input: string;
-  output: string;
+class ConvertImage {
+  paths: PathnameProps[];
 
-  constructor({ input, output }: PathProps) {
-    this.input = input;
-    this.output = output;
+  constructor(params: CompressImageProps) {
+    this.paths = params.paths;
   }
 
   /**
    * @params format: string
    * @variants jpg, jpeg, png, webp, tiff
    * */
-  to(format: "jpg" | "jpeg" | "png" | "webp" | "tiff") {
-    return `ffmpeg -i ${this.input} ${this.output}.${format}`;
+  convert(props: ConverMethod) {
+    const deleteExtension = (pathname: string) => {
+      return pathname.replace(/\.[^/.]+$/, "");
+    };
+
+    return `ffmpeg -i ${props.inputPathname} ${deleteExtension(props.outputPathname)}.${props.toExtension}`;
   }
 }
 
-export { Compress, Resolutions, Convert };
+export { CompressImage, Resolutions, ConvertImage };

@@ -52,6 +52,11 @@ interface CompessMethod extends PathnameProps {
   quality?: number | "lzw" | "jpeg" | "zlib";
 }
 
+type ConvertExtension = "jpg" | "jpeg" | "png" | "webp" | "tiff";
+interface ConverMethod extends PathnameProps {
+  toExtension: ConvertExtension;
+}
+
 export type {
   PathProps,
   ScaleProps,
@@ -66,4 +71,6 @@ export type {
   FileName,
   ExecCallbackProps,
   CompessMethod,
+  ConverMethod,
+  ConvertExtension,
 };

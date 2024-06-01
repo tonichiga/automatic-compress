@@ -1,12 +1,14 @@
 import {
   CompessMethod,
+  ConverMethod,
+  ConvertExtension,
   DirPathname,
   ExecCallbackProps,
   FfmpegConfig,
   FileHandlerProps,
   PathnameProps,
 } from "../../types";
-import { Compress as CompressImage } from "../commands/image-commands";
+import { CompressImage, ConvertImage } from "../commands/image-commands";
 import { Compress as CompressVideo } from "../commands/video-commands";
 import { FileHandler } from "../handlers/file-handler";
 import { exec } from "child_process";
@@ -66,9 +68,7 @@ class FfmpegExecute extends FileHandler {
     const filePathnames = await this.initialize();
     if (!filePathnames) return console.log("Нет файлов для сжатия.");
 
-    const compress = new CompressImage({
-      paths: filePathnames,
-    });
+    const compress = new CompressImage();
 
     const extensions = this.getFilesByExtensions(filePathnames);
     Object.keys(extensions).forEach((extension) => {
@@ -96,6 +96,39 @@ class FfmpegExecute extends FileHandler {
           }
         });
       }
+    });
+  }
+
+  async convertImage({ toExtension }: { toExtension: ConvertExtension }) {
+    const filePathnames = await this.initialize();
+    if (!filePathnames) return console.log("Нет файлов для сжатия.");
+
+    const convert = new ConvertImage({
+      paths: filePathnames,
+    });
+
+    const extensions = this.getFilesByExtensions(filePathnames);
+    Object.keys(extensions).forEach((extension) => {
+      extensions[extension].forEach(({ inputPathname, outputPathname }) => {
+        try {
+          const command = convert.convert({
+            toExtension,
+            inputPathname,
+            outputPathname,
+          });
+
+          this.executeFile({
+            inputPathname,
+            outputPathname,
+            command,
+            callback: (response: ExecCallbackProps) => {
+              console.log(`Success covert`, response.inputPathname);
+            },
+          });
+        } catch (error) {
+          console.log({ status: "error", message: error.message });
+        }
+      });
     });
   }
 }
