@@ -59,3 +59,21 @@ var imageCommands = function (input, output) { return ({
     ".webp": "ffmpeg -i ".concat(input, " -vf \"scale=iw/2:ih/2,format=rgba\" -q:v 75 ").concat(output),
 }); };
 exports.imageCommands = imageCommands;
+var imageAction = {
+    compress: function (input, output) {
+        return {
+            ".jpg": "ffmpeg -i ".concat(input, " -compression_level 100 ").concat(output),
+            ".jpeg": "ffmpeg -i ".concat(input, " -compression_level 100 ").concat(output),
+        };
+    },
+    resize: function (input, output) {
+        return "ffmpeg -i ".concat(input, " -vf \"scale=iw/4:ih/4,format=rgba\"  ").concat(output);
+    },
+    convert: function (input, output) {
+        return "ffmpeg -i ".concat(input, " -c:v libwebp -lossless 0 -q:v 75 \"./src/output-image\"");
+    },
+    convertWebp: function (input, output) {
+        return "ffmpeg -i ".concat(input, " -vf \"scale=iw/2:ih/2,format=rgba\" -q:v 75 ").concat(output);
+    },
+};
+var videoAction = {};

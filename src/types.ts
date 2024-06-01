@@ -1,28 +1,36 @@
+import { inputDir } from "./compress/paths";
+
+type FullPathname = string;
+type DirPathname = string;
+type DirPathnames = {
+  inputDir: DirPathname;
+  outputDir: DirPathname;
+};
+type FileName = string;
+
 interface PathProps {
   output: string;
   input: string;
   isClearOutput?: boolean;
 }
 
-type CompressImageProps =
-  | { paths: PathnameProps[] }
-  | {
-      input: string;
-      output: string;
-    };
+type CompressImageProps = { paths: PathnameProps[] };
 
 interface PathnameProps {
-  inputPathname: string;
-  outputPathname: string;
+  inputPathname: FullPathname;
+  outputPathname: FullPathname;
 }
 
-interface FileHandlerProps extends PathProps {
-  type: "image" | "video";
+interface FileHandlerProps {
+  inputDir: string;
+  outputDir: string;
+  type: "images" | "videos";
 }
 
-interface FfmpegConfig extends FileHandlerProps {
-  quality: number;
-  action: "compress" | "convert";
+interface FfmpegConfig {
+  inputDir: DirPathname;
+  outputDir: DirPathname;
+  type: "images" | "videos";
 }
 
 interface ScaleProps {
@@ -42,4 +50,8 @@ export type {
   FfmpegConfig,
   PathnameProps,
   CompressImageProps,
+  FullPathname,
+  DirPathname,
+  DirPathnames,
+  FileName,
 };

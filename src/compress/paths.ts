@@ -4,4 +4,14 @@ const inputDirImage = "./src/input-image";
 const outputDirVideo = "./src/output-video";
 const inputDirVideo = "./src/input-video";
 
-export { outputDirImage, inputDirImage, outputDirVideo, inputDirVideo };
+const inputDir = "./src/input";
+const outputDir = "./src/output";
+
+export {
+  outputDirImage,
+  inputDirImage,
+  outputDirVideo,
+  inputDirVideo,
+  inputDir,
+  outputDir,
+};

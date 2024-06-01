@@ -5,21 +5,77 @@ import {
   ProportionsProps,
   ScaleProps,
 } from "../../types";
+import { FileHandler } from "../handlers/file-handler";
 
 class Compress {
-  input?: string;
-  output?: string;
   paths: PathnameProps[];
 
   constructor(params: CompressImageProps) {
+    this.compressJpeg = this.compressJpeg.bind(this);
+    this.compressJpg = this.compressJpg.bind(this);
+    this.compressPng = this.compressPng.bind(this);
+    this.compressWebp = this.compressWebp.bind(this);
+    this.compressTiff = this.compressTiff.bind(this);
+
     if ("paths" in params) {
       this.paths = params.paths;
     }
+  }
 
-    if ("input" in params && "output" in params) {
-      this.input = params.input;
-      this.output = params.output;
-    }
+  compressMethodByExtension() {
+    return {
+      ".jpeg": this.compressJpeg,
+      ".jpg": this.compressJpg,
+      ".png": this.compressPng,
+      ".webp": this.compressWebp,
+      ".tiff": this.compressTiff,
+    };
+  }
+
+  getFilesByExtensions(paths: PathnameProps[]) {
+    let extensions = {};
+    const fileHandler = new FileHandler();
+
+    paths.forEach(({ inputPathname, outputPathname }) => {
+      const fileExtension = fileHandler.defineInputFileExtension(inputPathname);
+      extensions = {
+        ...extensions,
+        [fileExtension]: [
+          ...extensions[fileExtension],
+          { inputPathname, outputPathname },
+        ],
+      };
+    });
+
+    return extensions;
+  }
+
+  startCompress({
+    quality,
+    executeHandler,
+  }): Promise<{ status: "success" } | { status: "error"; message: string }> {
+    const extensions = this.getFilesByExtensions(this.paths);
+
+    return new Promise((resolve, reject) => {
+      Object.keys(extensions).forEach((extension) => {
+        const compressMethod = this.compressMethodByExtension()[extension];
+        if (compressMethod) {
+          extensions[extension].forEach(({ inputPathname, outputPathname }) => {
+            try {
+              const command = compressMethod({
+                inputPathname,
+                outputPathname,
+                quality,
+              });
+              executeHandler(inputPathname, outputPathname, command);
+              resolve({ status: "success" });
+            } catch (error) {
+              reject({ status: "error", message: error.message });
+            }
+          });
+        }
+      });
+    });
   }
 
   /**
@@ -28,14 +84,12 @@ class Compress {
    * @max 31 (worse quality)
    * @default 20
    */
-  compressJpeg(quality: number = 20) {
-    if (this.paths.length) {
-      return this.paths.map(({ inputPathname, outputPathname }) => {
-        return `ffmpeg -i ${inputPathname} -q:v ${quality} ${outputPathname}`;
-      });
-    }
-
-    return `ffmpeg -i ${this.input} -q:v ${quality} ${this.output}`;
+  compressJpeg({
+    quality = 20,
+    inputPathname,
+    outputPathname,
+  }: PathnameProps & { quality?: number }) {
+    return `ffmpeg -i ${inputPathname} -q:v ${quality} ${outputPathname}`;
   }
 
   /**
@@ -44,14 +98,12 @@ class Compress {
    * @max 31 (worse quality)
    * @default 20
    */
-  compressJpg(quality: number = 20) {
-    if (this.paths.length) {
-      return this.paths.map(({ inputPathname, outputPathname }) => {
-        return `ffmpeg -i ${inputPathname} -q:v ${quality} ${outputPathname}`;
-      });
-    }
-
-    return `ffmpeg -i ${this.input} -q:v ${quality} ${this.output}`;
+  compressJpg({
+    quality = 20,
+    inputPathname,
+    outputPathname,
+  }: PathnameProps & { quality?: number }) {
+    return `ffmpeg -i ${inputPathname} -q:v ${quality} ${outputPathname}`;
   }
 
   /**
@@ -60,14 +112,12 @@ class Compress {
    * @max 100 (worse quality)
    * @default 75
    * */
-  compressPng(quality: number = 75) {
-    if (this.paths.length) {
-      return this.paths.map(({ inputPathname, outputPathname }) => {
-        return `ffmpeg -i ${inputPathname} -compression_level ${quality} ${outputPathname}`;
-      });
-    }
-
-    return `ffmpeg -i ${this.input} -compression_level ${quality} ${this.output}`;
+  compressPng({
+    quality = 75,
+    inputPathname,
+    outputPathname,
+  }: PathnameProps & { quality?: number }) {
+    return `ffmpeg -i ${inputPathname} -compression_level ${quality} ${outputPathname}`;
   }
 
   /**
@@ -76,14 +126,12 @@ class Compress {
    * @max 100 (worse quality)
    * @default 75
    * */
-  compressWebp(quality: number = 75) {
-    if (this.paths.length) {
-      return this.paths.map(({ inputPathname, outputPathname }) => {
-        return `ffmpeg -i ${inputPathname} -compression_level ${quality} ${outputPathname}`;
-      });
-    }
-
-    return `ffmpeg -i ${this.input} -compression_level ${quality} ${this.output}`;
+  compressWebp({
+    quality = 75,
+    inputPathname,
+    outputPathname,
+  }: PathnameProps & { quality?: number }) {
+    return `ffmpeg -i ${inputPathname} -compression_level ${quality} ${outputPathname}`;
   }
 
   /**
@@ -91,14 +139,12 @@ class Compress {
    * @variants jpeg, zlib
    * @default lzw
    * */
-  compressTiff(quality: "lzw" | "jpeg" | "zlib" = "lzw") {
-    if (this.paths.length) {
-      return this.paths.map(({ inputPathname, outputPathname }) => {
-        return `ffmpeg -i ${inputPathname} -compression_algo ${quality} ${outputPathname}`;
-      });
-    }
-
-    return `ffmpeg -i ${this.input} -compression_algo ${quality} ${this.output}`;
+  compressTiff({
+    inputPathname,
+    outputPathname,
+    quality = "lzw",
+  }: PathnameProps & { quality?: "lzw" | "jpeg" | "zlib" }) {
+    return `ffmpeg -i ${inputPathname} -compression_algo ${quality} ${outputPathname}`;
   }
 }
 
@@ -106,9 +152,9 @@ class Resolutions {
   input: string;
   output: string;
 
-  constructor({ input, output }: PathProps) {
-    this.input = input;
-    this.output = output;
+  constructor({ inputPathname, outputPathname }: PathnameProps) {
+    this.input = inputPathname;
+    this.output = outputPathname;
   }
 
   /**
