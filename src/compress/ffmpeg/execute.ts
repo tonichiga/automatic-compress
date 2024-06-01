@@ -1,5 +1,7 @@
 import {
+  CompessMethod,
   DirPathname,
+  ExecCallbackProps,
   FfmpegConfig,
   FileHandlerProps,
   PathnameProps,
@@ -29,10 +31,10 @@ class FfmpegExecute extends FileHandler {
     exec(command, (error, stdout, stderr, ...props) => {
       if (error) {
         console.error(`Ошибка при сжатии файла: ${error.message}`);
-        return callback(error);
+        return callback(null, { error });
       }
 
-      callback(null);
+      callback({ inputPathname, outputPathname, command });
     });
   }
 
@@ -62,17 +64,16 @@ class FfmpegExecute extends FileHandler {
 
   async compressImage({ quality }) {
     const filePathnames = await this.initialize();
-
     if (!filePathnames) return console.log("Нет файлов для сжатия.");
-
-    const extensions = this.getFilesByExtensions(filePathnames);
 
     const compress = new CompressImage({
       paths: filePathnames,
     });
 
+    const extensions = this.getFilesByExtensions(filePathnames);
     Object.keys(extensions).forEach((extension) => {
-      const compressMethod = compress.compressMethodByExtension()[extension];
+      const compressMethod: (props: CompessMethod) => string =
+        compress.compressMethodByExtension()[extension];
       if (compressMethod) {
         extensions[extension].forEach(({ inputPathname, outputPathname }) => {
           try {
@@ -86,11 +87,10 @@ class FfmpegExecute extends FileHandler {
               inputPathname,
               outputPathname,
               command,
-              callback: (...props) => {
-                console.log("Callback props :", { props });
+              callback: (response: ExecCallbackProps) => {
+                console.log(`Success compress`, response.inputPathname);
               },
             });
-            console.log({ status: "success" });
           } catch (error) {
             console.log({ status: "error", message: error.message });
           }

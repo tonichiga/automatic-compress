@@ -42,6 +42,16 @@ interface ProportionsProps {
   coeff: number;
 }
 
+interface ExecCallbackProps {
+  inputPathname: FullPathname;
+  outputPathname: FullPathname;
+  command: string;
+}
+
+interface CompessMethod extends PathnameProps {
+  quality?: number | "lzw" | "jpeg" | "zlib";
+}
+
 export type {
   PathProps,
   ScaleProps,
@@ -54,4 +64,6 @@ export type {
   DirPathname,
   DirPathnames,
   FileName,
+  ExecCallbackProps,
+  CompessMethod,
 };
